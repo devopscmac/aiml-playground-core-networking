@@ -27,13 +27,13 @@ module "vpc" {
 # Outputs
 
 output "private_subnet_id" {
-value = [for subnet in aws_subnet.private_subnets : subnet.id]
+value = [for subnet in module.vpc.private_subnets : subnet.id]
 }
 
 output "public_subnet_id" {
-value = [for subnet in aws_subnet.public_subnets : subnet.id]
+value = [for subnet in module.vpc.public_subnets : subnet.id]
 }
 
 output "database_subnet_id" {
-value = [for subnet in aws_subnet.database_subnets : subnet.id]
+value = [for subnet in database_subnets : subnet.id]
 }
