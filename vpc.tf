@@ -1,39 +1,46 @@
+# Create VPC using Terraform Module
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  version = "5.8.1"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.0.0"
 
-  name = "AIML-VPC"
-  cidr = "10.0.0.0/16"
+  # Details
+  name            = "${var.name}-${local.name}"
+  cidr            = var.cidr
+  azs             = var.azs
+  public_subnets  = var.public_subnets
+  private_subnets = var.private_subnets
 
-  azs                    = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  private_subnets        = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets         = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-  database_subnets       = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
+  database_subnets                   = var.database_subnets
+  create_database_subnet_group       = var.create_database_subnet_group
+  create_database_subnet_route_table = var.create_database_subnet_route_table
+  # create_database_internet_gateway_route = true
+  # create_database_nat_gateway_route = true
 
-  enable_nat_gateway = true
-  enable_vpn_gateway = true
+  # NAT Gateways - Outbound Communication
+  enable_nat_gateway = var.enable_nat_gateway
+  single_nat_gateway = var.single_nat_gateway
 
+  # DNS Parameters in VPC
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
-  single_nat_gateway     = true
-  one_nat_gateway_per_az = false
+  # Additional tags for the VPC
+  tags     = local.tags
+  vpc_tags = local.tags
 
-  tags = {
-    Terraform   = "true"
-    Environment = "AIML"
-    name        = "AIML-VPC"
+  # Additional tags
+  # Additional tags for the public subnets
+  public_subnet_tags = {
+    Name = "VPC Public Subnets"
   }
-}
-
-# Outputs
-
-output "private_subnet_id" {
-value = [for subnet in module.vpc.private_subnets : subnet.id]
-}
-
-output "public_subnet_id" {
-value = [for subnet in module.vpc.public_subnets : subnet.id]
-}
-
-output "database_subnet_id" {
-value = [for subnet in database_subnets : subnet.id]
+  # Additional tags for the private subnets
+  private_subnet_tags = {
+    Name = "VPC Private Subnets"
+  }
+  # Additional tags for the database subnets
+  database_subnet_tags = {
+    Name = "VPC Private Database Subnets"
+  }
+  # Instances launched into the Public subnet should be assigned a public IP address. Specify true to indicate that instances launched into the subnet should be assigned a public IP address
+  map_public_ip_on_launch = true
 }
